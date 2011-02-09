@@ -38,7 +38,7 @@ About Hashcodes in Delimited Output
 -----------------------------------
 There are 3 Hashcodes calculated for the jar file in the Delimited output format.
 
-**HASH_MD**5 is an MD5 hashcode calculated from the entire jar file itself.
+**HASH_MD5** is an MD5 hashcode calculated from the entire jar file itself.
 It should be identical to the hashcode found via the typical unix command line of
 
     $ md5sum mystery.jar
