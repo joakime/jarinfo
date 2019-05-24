@@ -1,6 +1,8 @@
 package net.erdfelt.util.jarinfo;
 
-import org.eclipse.jetty.toolchain.test.OS;
+import java.nio.file.Path;
+
+import org.eclipse.jetty.toolchain.test.MavenTestingUtils;
 import org.junit.Test;
 
 public class JarInfoTest
@@ -8,16 +10,16 @@ public class JarInfoTest
     @Test
     public void testDumpSimple()
     {
-        String args[] =
-        { OS.separators("src/test/jars/mystery.jar") };
+        Path mystery = MavenTestingUtils.getTestResourcePathFile("jars/mystery.jar");
+        String args[] = {mystery.toString()};
         JarInfo.main(args);
     }
 
     @Test
     public void testDumpDelimited()
     {
-        String args[] =
-        { "-o", "DELIMITED", OS.separators("src/test/jars/mystery.jar") };
+        Path mystery = MavenTestingUtils.getTestResourcePathFile("jars/mystery.jar");
+        String args[] = {"-o", "DELIMITED", mystery.toString()};
         JarInfo.main(args);
     }
 }
