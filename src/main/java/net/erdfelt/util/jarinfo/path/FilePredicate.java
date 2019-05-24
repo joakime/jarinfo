@@ -13,24 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.erdfelt.util.jarinfo;
+package net.erdfelt.util.jarinfo.path;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 
-import org.junit.Test;
-
-/**
- * DelimitedDumperTest
- * 
- * @author Joakim Erdfelt
- */
-public class DelimitedDumperTest
+public class FilePredicate implements PathPredicate
 {
-    @Test
-    public void testJarDump() throws Exception
+    @Override
+    public boolean test(Path path, BasicFileAttributes basicFileAttributes)
     {
-        Dumper dumper = new DelimitedDumper();
-        File mystery = new File("src/test/jars/mystery.jar");
-        dumper.dump(mystery);
+        return Files.isRegularFile(path);
     }
 }

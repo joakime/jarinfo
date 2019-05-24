@@ -34,6 +34,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import net.erdfelt.util.jarinfo.Digester;
+import net.erdfelt.util.jarinfo.path.FilePredicate;
+import net.erdfelt.util.jarinfo.path.NamePredicate;
+import net.erdfelt.util.jarinfo.path.PathComparator;
 
 public class JarAnalyzer implements AutoCloseable
 {

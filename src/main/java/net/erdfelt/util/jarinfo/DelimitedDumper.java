@@ -1,5 +1,3 @@
-package net.erdfelt.util.jarinfo;
-
 /*
  * Copyright 2006 Joakim Erdfelt
  *
@@ -15,6 +13,7 @@ package net.erdfelt.util.jarinfo;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package net.erdfelt.util.jarinfo;
 
 import java.io.File;
 import java.util.List;

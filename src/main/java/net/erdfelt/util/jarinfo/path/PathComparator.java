@@ -13,24 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.erdfelt.util.jarinfo;
+package net.erdfelt.util.jarinfo.path;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.util.Comparator;
 
-import org.junit.Test;
-
-/**
- * DelimitedDumperTest
- * 
- * @author Joakim Erdfelt
- */
-public class DelimitedDumperTest
+public class PathComparator implements Comparator<Path>
 {
-    @Test
-    public void testJarDump() throws Exception
+    @Override
+    public int compare(Path o1, Path o2)
     {
-        Dumper dumper = new DelimitedDumper();
-        File mystery = new File("src/test/jars/mystery.jar");
-        dumper.dump(mystery);
+        return o1.toString().compareTo(o2.toString());
     }
 }
