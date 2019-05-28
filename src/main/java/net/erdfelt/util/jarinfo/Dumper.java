@@ -15,14 +15,12 @@
  */
 package net.erdfelt.util.jarinfo;
 
-import java.io.File;
+import net.erdfelt.util.jarinfo.analysis.JarAnalyzer;
 
 /**
  * Dumper
- * 
- * @author Joakim Erdfelt
  */
 public interface Dumper
 {
-    public void dump(File jarfile) throws Exception;
+    void dump(JarAnalyzer analyzer) throws Exception;
 }

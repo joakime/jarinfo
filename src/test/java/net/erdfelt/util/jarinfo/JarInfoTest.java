@@ -18,7 +18,7 @@ package net.erdfelt.util.jarinfo;
 import java.nio.file.Path;
 
 import org.eclipse.jetty.toolchain.test.MavenTestingUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class JarInfoTest
 {

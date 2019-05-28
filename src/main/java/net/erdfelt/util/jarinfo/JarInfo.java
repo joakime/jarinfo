@@ -15,12 +15,13 @@
  */
 package net.erdfelt.util.jarinfo;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.plexus.DefaultPlexusContainer;
-import org.codehaus.plexus.PlexusContainer;
+import net.erdfelt.util.jarinfo.analysis.JarAnalyzer;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -28,18 +29,16 @@ import org.kohsuke.args4j.Option;
 
 /**
  * JarInfo
- * 
- * @author Joakim Erdfelt
  */
 public class JarInfo
 {
-    public static enum OutputFormat
+    public enum OutputFormat
     {
         DELIMITED, STANDARD
     }
 
     @Option(name = "-o", aliases =
-    { "--output-format" }, usage = "Output format")
+        {"--output-format"}, usage = "Output format")
     private OutputFormat outputFmt = OutputFormat.STANDARD;
 
     @Argument(required = true, index = 0, metaVar = "FILE", usage = "jar file")
@@ -68,44 +67,37 @@ public class JarInfo
 
     private void execute() throws Exception
     {
-        PlexusContainer plexus = new DefaultPlexusContainer();
-        try
+        String dumperHint = "standard"; // default
+        if (outputFmt == OutputFormat.DELIMITED)
         {
-            String dumperHint = "standard"; // default
-            if (outputFmt == OutputFormat.DELIMITED)
-            {
-                dumperHint = "delimited";
-            }
-            Dumper dumper = (Dumper)plexus.lookup(Dumper.class.getName(),dumperHint);
-
-            for (String jarFilename : jarfilenames)
-            {
-                File jarFile = new File(jarFilename);
-
-                if (!jarFile.exists())
-                {
-                    System.err.println("ERROR: Jar file does not exist: " + jarFile.getAbsolutePath());
-                    System.exit(1);
-                }
-
-                if (!jarFile.isFile())
-                {
-                    System.err.println("ERROR: Not a file: " + jarFile.getAbsolutePath());
-                    System.exit(1);
-                }
-
-                if (!jarFile.canRead())
-                {
-                    System.err.println("ERROR: Unable to read file: " + jarFile.getAbsolutePath());
-                    System.exit(1);
-                }
-
-                dumper.dump(jarFile);
-            }
+            dumperHint = "delimited";
         }
-        finally
+        Dumper dumper = DumperFactory.getDumper(dumperHint);
+
+        for (String jarFilename : jarfilenames)
         {
-            plexus.dispose();
+            Path jarFile = Paths.get(jarFilename);
+
+            if (!Files.exists(jarFile))
+            {
+                System.err.println("ERROR: Jar file does not exist: " + jarFile);
+                System.exit(1);
+            }
+
+            if (!Files.isRegularFile(jarFile))
+            {
+                System.err.println("ERROR: Not a file: " + jarFile);
+                System.exit(1);
+            }
+
+            if (!Files.isReadable(jarFile))
+            {
+                System.err.println("ERROR: Unable to read file: " + jarFile);
+                System.exit(1);
+            }
+
+            JarAnalyzer jarAnalyzer = new JarAnalyzer(jarFile);
+            dumper.dump(jarAnalyzer);
         }
     }
 }

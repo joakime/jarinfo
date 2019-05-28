@@ -37,21 +37,28 @@ import net.erdfelt.util.jarinfo.Digester;
 import net.erdfelt.util.jarinfo.path.FilePredicate;
 import net.erdfelt.util.jarinfo.path.NamePredicate;
 import net.erdfelt.util.jarinfo.path.PathComparator;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.ClassNode;
 
 public class JarAnalyzer implements AutoCloseable
 {
+    public enum HashType
+    {
+        MD5, SHA1, BYTECODE
+    }
+
     private final Path jarFile;
     private final FileSystem zipFileSystem;
     private final Path rootZipPath;
 
-    private Map<String, String> hashes = new HashMap<String, String>();
+    private Map<HashType, String> hashes = new HashMap<>();
 
     public JarAnalyzer(Path jarfile) throws IOException
     {
         this.jarFile = jarfile;
 
-        setHash(jarFile, Digester.MD5());
-        setHash(jarFile, Digester.SHA1());
+        setHash(jarFile, Digester.MD5(), HashType.MD5);
+        setHash(jarFile, Digester.SHA1(), HashType.SHA1);
 
         URI zipFsUri = toZipFsUri(jarfile);
 
@@ -62,6 +69,23 @@ public class JarAnalyzer implements AutoCloseable
 
         // assume only 1 root for ZipFS
         rootZipPath = zipFileSystem.getPath("/");
+    }
+
+    public long getFileSize()
+    {
+        try
+        {
+            return Files.size(this.jarFile);
+        }
+        catch (IOException e)
+        {
+            return -1;
+        }
+    }
+
+    public Path getPath()
+    {
+        return this.jarFile;
     }
 
     private final URI toZipFsUri(Path jarFile)
@@ -112,10 +136,10 @@ public class JarAnalyzer implements AutoCloseable
 
             // Walk Maven Project Properties file
             Path metainfMaven = resolveWellKnownDirectory(metaInfDir, "maven");
-            if (Files.exists(metainfMaven) && Files.isDirectory(metainfMaven))
+            if (metainfMaven != null && Files.exists(metainfMaven) && Files.isDirectory(metainfMaven))
             {
-                BiPredicate<Path, BasicFileAttributes> pathPredicate = new FilePredicate()
-                    .and(new NamePredicate("^pom\\.properties$"));
+                BiPredicate<Path, BasicFileAttributes> pathPredicate = Maven.newPomPropsPredicate();
+
                 try (Stream<Path> finder = Files.find(metainfMaven, 20, pathPredicate))
                 {
                     finder.sorted(new PathComparator())
@@ -235,6 +259,38 @@ public class JarAnalyzer implements AutoCloseable
         }
     }
 
+    public List<ClassReference> getClassReferences() throws IOException
+    {
+        BiPredicate<Path, BasicFileAttributes> pathPredicate = new FilePredicate()
+            .and(new NamePredicate("^.*\\.class$"));
+        try (Stream<Path> finder = Files.find(rootZipPath, 20, pathPredicate))
+        {
+            return finder.sorted(new PathComparator()).map((path) -> parseClass(path))
+                .collect(Collectors.toList());
+        }
+    }
+
+    public ClassReference parseClass(Path path)
+    {
+        ClassReference classReference = new ClassReference(path);
+        try (InputStream inputStream = Files.newInputStream(path))
+        {
+            ClassNode classNode = new ClassNode();
+            ClassReader parser = new ClassReader(inputStream);
+            parser.accept(classNode, 0);
+
+            classReference.setBytecodeVersion(BytecodeVersion.from(classNode.version));
+            classReference.setClassName(classNode.name);
+
+            classNode.methods.stream().forEach((methodNode) -> classReference.addMethod(methodNode));
+        }
+        catch (IOException e)
+        {
+            classReference.addError(e);
+        }
+        return classReference;
+    }
+
     public List<Path> getAll() throws IOException
     {
         BiPredicate<Path, BasicFileAttributes> pathPredicate = new FilePredicate();
@@ -244,7 +300,7 @@ public class JarAnalyzer implements AutoCloseable
         }
     }
 
-    private void setHash(Path file, Digester digester)
+    private void setHash(Path file, Digester digester, HashType hashType)
     {
         String hash;
         try
@@ -255,12 +311,12 @@ public class JarAnalyzer implements AutoCloseable
         {
             hash = "-"; // error condition
         }
-        this.hashes.put(digester.getHashID(), hash);
+        this.hashes.put(hashType, hash);
     }
 
-    public String getHash(String key)
+    public String getHash(HashType hashType)
     {
-        return hashes.get(key);
+        return hashes.get(hashType);
     }
 
     @Override

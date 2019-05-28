@@ -51,7 +51,7 @@ public class Digester
     }
 
     private static final int BUFFER_SIZE = 64 * 1024;
-    private static final char[] hexcodes = "0123456789ABCDEF".toCharArray();
+    private static final char[] hexcodes = "0123456789abcdef".toCharArray();
 
     private final MessageDigest messageDigest;
 

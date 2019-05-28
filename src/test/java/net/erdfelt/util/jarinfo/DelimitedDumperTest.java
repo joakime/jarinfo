@@ -15,14 +15,14 @@
  */
 package net.erdfelt.util.jarinfo;
 
-import java.io.File;
+import java.nio.file.Path;
 
-import org.junit.Test;
+import net.erdfelt.util.jarinfo.analysis.JarAnalyzer;
+import org.eclipse.jetty.toolchain.test.MavenTestingUtils;
+import org.junit.jupiter.api.Test;
 
 /**
  * DelimitedDumperTest
- * 
- * @author Joakim Erdfelt
  */
 public class DelimitedDumperTest
 {
@@ -30,7 +30,8 @@ public class DelimitedDumperTest
     public void testJarDump() throws Exception
     {
         Dumper dumper = new DelimitedDumper();
-        File mystery = new File("src/test/jars/mystery.jar");
-        dumper.dump(mystery);
+        Path mystery = MavenTestingUtils.getTestResourcePathFile("jars/mystery.jar");
+        JarAnalyzer jarAnalyzer = new JarAnalyzer(mystery);
+        dumper.dump(jarAnalyzer);
     }
 }

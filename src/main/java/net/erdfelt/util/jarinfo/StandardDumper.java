@@ -15,73 +15,40 @@
  */
 package net.erdfelt.util.jarinfo;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import org.apache.bcel.classfile.ClassFormatException;
-import org.apache.bcel.classfile.ClassParser;
-import org.apache.bcel.classfile.JavaClass;
-import org.apache.bcel.classfile.Method;
-import org.codehaus.plexus.component.annotations.Component;
+import net.erdfelt.util.jarinfo.analysis.ClassReference;
+import net.erdfelt.util.jarinfo.analysis.JarAnalyzer;
 
 /**
  * StandardDumper
- * 
- * @author Joakim Erdfelt
  */
-@Component(role = Dumper.class, hint = "standard")
 public class StandardDumper implements Dumper
 {
-    public void dump(File jarFile) throws Exception
+    @Override
+    public void dump(JarAnalyzer analyzer) throws Exception
     {
-        JarFile jar = new JarFile(jarFile);
-        List<JarEntry> entries = new ArrayList<JarEntry>();
-        entries.addAll(Collections.list(jar.entries()));
-        Collections.sort(entries,new JarEntryComparator());
+        System.out.println("Path: " + analyzer.getPath());
+        System.out.println("Size: " + analyzer.getFileSize());
 
-        String jarfilename = jarFile.getAbsolutePath();
-
-        for (JarEntry entry : entries)
+        for (Path entry : analyzer.getAll())
         {
-            if (entry.getName().endsWith(".class"))
+            if (Files.isRegularFile(entry))
             {
-                String classname = entry.getName();
-
-                ClassParser classParser = new ClassParser(jarfilename,entry.getName());
-                JavaClass javaClass;
-                try
+                if(entry.getFileName().endsWith(".class"))
                 {
-                    javaClass = classParser.parse();
-
-                    String classSignature = javaClass.getClassName();
-
-                    OUT(classSignature + " package:" + javaClass.getPackageName());
-
-                    Method methods[] = javaClass.getMethods();
-                    for (int i = 0; i < methods.length; i++)
-                    {
-                        OUT(classSignature + "." + methods[i].getName() + methods[i].getSignature());
-                    }
+                    ClassReference classReference = analyzer.parseClass(entry);
+                    System.out.println("  class: " + classReference.getClassName());
+                    System.out.println("    version: " + classReference.getBytecodeVersion());
+                    System.out.println("    methods: ");
+                    classReference.getMethodSignatures().forEach(sig -> System.out.println("     # " + sig));
                 }
-                catch (ClassFormatException e)
+                else
                 {
-                    OUT("Unable to process class " + classname);
-                    continue;
+                    System.out.println("  file: " + entry);
                 }
-            }
-            else
-            {
-                OUT(entry.getName());
             }
         }
-    }
-
-    private void OUT(String msg)
-    {
-        System.out.println(msg);
     }
 }

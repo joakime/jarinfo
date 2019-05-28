@@ -18,6 +18,7 @@ package net.erdfelt.util.jarinfo.analysis;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jetty.toolchain.test.MavenTestingUtils;
 import org.junit.jupiter.api.Test;
@@ -25,10 +26,40 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 public class JarAnalyzerTest
 {
+    @Test
+    public void testGetClassReferences() throws IOException
+    {
+        Path mystery = MavenTestingUtils.getTestResourcePathFile("jars/mystery.jar");
+
+        try (JarAnalyzer analyzer = new JarAnalyzer(mystery))
+        {
+            List<ClassReference> classes = analyzer.getClassReferences();
+            assertThat(classes, notNullValue());
+            assertThat(classes.size(), is(84));
+
+            Optional<ClassReference> optRef = classes.stream().filter((classRef) ->
+                classRef.getClassName().equals("javax.jdo.Transaction"))
+                .findFirst();
+
+            ClassReference ref = optRef.get();
+            assertThat("ref.bytecodeVersion", ref.getBytecodeVersion(), is(BytecodeVersion.JAVA_1_3));
+
+            List<String> methodSignatures = ref.getMethodSignatures();
+            assertThat("Method Signatures", methodSignatures, not(nullValue()));
+
+            for (String signature : methodSignatures)
+            {
+                assertThat("Method Signature", signature, not(nullValue()));
+            }
+        }
+    }
+
     @Test
     public void testGetClasses() throws IOException
     {

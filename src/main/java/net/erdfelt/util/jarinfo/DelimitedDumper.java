@@ -15,58 +15,77 @@
  */
 package net.erdfelt.util.jarinfo;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
-import java.util.jar.JarEntry;
 
-import org.apache.maven.shared.jar.classes.JarClasses;
-import org.codehaus.plexus.component.annotations.Component;
+import net.erdfelt.util.jarinfo.analysis.BytecodeVersion;
+import net.erdfelt.util.jarinfo.analysis.ClassReference;
+import net.erdfelt.util.jarinfo.analysis.JarAnalyzer;
+import net.erdfelt.util.jarinfo.analysis.JarReference;
 
 /**
  * DelimitedDumper
- * 
- * @author Joakim Erdfelt
  */
-@Component(role = Dumper.class, hint = "delimited")
 public class DelimitedDumper implements Dumper
 {
-    public void dump(File jarFile) throws Exception
+    @Override
+    public void dump(JarAnalyzer analyzer) throws Exception
     {
-        JarAnalysis analysis = new JarAnalysis(jarFile);
+        OUT(analyzer, "FILE|" + analyzer.getPath().getFileName());
+        OUT(analyzer, "SIZE|" + analyzer.getFileSize());
 
-        OUT(jarFile,"FILE|" + jarFile.getName());
-        OUT(jarFile,"SIZE|" + jarFile.length());
-        OUT(jarFile,"HASH_MD5|" + analysis.getHash(JarAnalysis.MD5));
-        OUT(jarFile,"HASH_SHA1|" + analysis.getHash(JarAnalysis.SHA1));
-        OUT(jarFile,"HASH_BYTECODE|" + analysis.getHash(JarAnalysis.BYTECODE));
+        JarReference jarReference = analyzer.getReference();
 
-        JarClasses jarClasses = analysis.getJarData().getJarClasses();
-        OUT(jarFile,"JDK|" + jarClasses.getJdkRevision());
+        jarReference.getGroupId().forEach((groupId) -> OUT(analyzer, "GROUP_ID|" + groupId));
+        jarReference.getArtifactId().forEach((artifactId) -> OUT(analyzer, "ARTIFACT_ID|" + artifactId));
+        jarReference.getVersion().forEach((version) -> OUT(analyzer, "VERSION|" + version));
 
-        @SuppressWarnings("unchecked")
-        List<String> classnames = jarClasses.getClassNames();
-        for (String classname : classnames)
+        jarReference.getJpmsModuleName().forEach((name) -> OUT(analyzer, "JPMS_MODULE_NAME|" + name));
+        if (jarReference.getOsgiSymbolicName() != null)
         {
-            OUT(jarFile,"CLASS|" + classname);
+            OUT(analyzer, "OSGI_SYMBOLIC_NAME|" + jarReference.getOsgiSymbolicName());
+        }
+        jarReference.getName().forEach((name) -> OUT(analyzer, "NAME|" + name));
+        jarReference.getVendor().forEach((vendor) -> OUT(analyzer, "VENDOR|" + vendor));
+
+        jarReference.getBuiltBy().forEach((builtBy) -> OUT(analyzer, "BUILT_BY|" + builtBy));
+        jarReference.getBuildJdk().forEach((buildJdk) -> OUT(analyzer, "BUILD_JDK|" + buildJdk));
+        jarReference.getCreatedBy().forEach((createdBy) -> OUT(analyzer, "CREATED_BY|" + createdBy));
+
+        OUT(analyzer, "HASH_MD5|" + analyzer.getHash(JarAnalyzer.HashType.MD5));
+        OUT(analyzer, "HASH_SHA1|" + analyzer.getHash(JarAnalysis.HashType.SHA1));
+        OUT(analyzer, "HASH_BYTECODE|" + analyzer.getHash(JarAnalysis.HashType.BYTECODE));
+
+        List<ClassReference> classReferences = analyzer.getClassReferences();
+
+        classReferences.stream().map(classReference -> classReference.getBytecodeVersion())
+            .max(Comparator.comparingInt(BytecodeVersion::getClassFormatVersion))
+            .ifPresent((max) -> OUT(analyzer, "JDK|" + max.getDesc()));
+
+        for (ClassReference classRef : classReferences)
+        {
+            OUT(analyzer, "CLASS|" + classRef.getClassName());
         }
 
-        @SuppressWarnings("unchecked")
-        List<String> methodnames = jarClasses.getMethods();
-        for (String methodName : methodnames)
+        for (ClassReference classRef : classReferences)
         {
-            OUT(jarFile,"METHOD|" + methodName);
+            classRef.getMethodSignatures().forEach((signature) -> OUT(analyzer, "METHOD|" + signature));
         }
 
-        @SuppressWarnings("unchecked")
-        List<JarEntry> entries = analysis.getEntries();
-        for (JarEntry entry : entries)
+        List<Path> entries = analyzer.getAll();
+        for (Path entry : entries)
         {
-            OUT(jarFile,"FILE|" + entry.getName());
+            if (Files.isDirectory(entry))
+                OUT(analyzer, "DIR|" + entry.toString());
+            else
+                OUT(analyzer, "FILE|" + entry.toString());
         }
     }
 
-    private void OUT(File jarFile, String msg)
+    private void OUT(JarAnalyzer analyzer, String msg)
     {
-        System.out.println(jarFile.getAbsolutePath() + "|" + msg);
+        System.out.println(analyzer.getPath().toString() + "|" + msg);
     }
 }
