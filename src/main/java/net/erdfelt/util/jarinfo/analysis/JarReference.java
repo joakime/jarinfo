@@ -30,6 +30,31 @@ public class JarReference
     private Set<String> name = new TreeSet<>();
     private Set<String> vendor = new TreeSet<>();
 
+    private Set<String> builtBy = new TreeSet<>();
+    private Set<String> buildJdk = new TreeSet<>();
+    private Set<String> createdBy = new TreeSet<>();
+
+    public void addBuiltBy(String value)
+    {
+        if(value == null)
+            return;
+        builtBy.add(value);
+    }
+
+    public void addBuildJdk(String value)
+    {
+        if(value == null)
+            return;
+        buildJdk.add(value);
+    }
+
+    public void addCreatedBy(String value)
+    {
+        if(value == null)
+            return;
+        createdBy.add(value);
+    }
+
     public void addGroupId(String value)
     {
         if (value == null)
@@ -112,5 +137,20 @@ public class JarReference
     public Set<String> getVendor()
     {
         return vendor;
+    }
+
+    public Set<String> getBuiltBy()
+    {
+        return builtBy;
+    }
+
+    public Set<String> getBuildJdk()
+    {
+        return buildJdk;
+    }
+
+    public Set<String> getCreatedBy()
+    {
+        return createdBy;
     }
 }

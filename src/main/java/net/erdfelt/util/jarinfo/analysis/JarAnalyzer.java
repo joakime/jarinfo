@@ -157,6 +157,12 @@ public class JarAnalyzer implements AutoCloseable
 
         jarReference.addGroupId(attributes.getValue(Attributes.Name.EXTENSION_NAME));
 
+        // Maven
+        jarReference.addBuiltBy(attributes.getValue(Maven.BUILT_BY));
+        jarReference.addBuildJdk(attributes.getValue(Maven.BUILD_JDK));
+        jarReference.addCreatedBy(attributes.getValue(Maven.CREATED_BY));
+        jarReference.addCreatedBy(attributes.getValue(Maven.ORIGINALLY_CREATED_BY));
+
         // OSGi
         jarReference.addName(attributes.getValue(Osgi.BUNDLE_NAME));
         jarReference.addVersion(attributes.getValue(Osgi.BUNDLE_VERSION));

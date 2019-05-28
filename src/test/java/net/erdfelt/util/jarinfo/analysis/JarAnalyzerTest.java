@@ -23,6 +23,7 @@ import org.eclipse.jetty.toolchain.test.MavenTestingUtils;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
@@ -50,6 +51,13 @@ public class JarAnalyzerTest
         {
             JarReference jarReference = analyzer.getReference();
             assertThat(jarReference, notNullValue());
+
+            assertThat("groupId", jarReference.getGroupId(), contains("org.eclipse.jetty"));
+            assertThat("artifactId", jarReference.getArtifactId(), contains("jetty-util"));
+            assertThat("versionId", jarReference.getVersion(), contains("9.4.18.v20190429"));
+
+            assertThat("built-by", jarReference.getBuiltBy(), contains("joakim"));
+            assertThat("built-jdk", jarReference.getBuildJdk(), contains("11.0.2"));
         }
     }
 }
