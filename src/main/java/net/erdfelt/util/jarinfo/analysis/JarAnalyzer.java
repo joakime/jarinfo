@@ -23,6 +23,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +70,39 @@ public class JarAnalyzer implements AutoCloseable
 
         // assume only 1 root for ZipFS
         rootZipPath = zipFileSystem.getPath("/");
+
+        Digester bytecodeDigester = Digester.SHA1();
+        List<IOException> bytecodeErrors = new ArrayList<>();
+        getClasses().forEach((path) ->
+        {
+            try (InputStream inputStream = Files.newInputStream(path))
+            {
+                bytecodeDigester.update(inputStream);
+            }
+            catch (IOException e)
+            {
+                bytecodeErrors.add(e);
+            }
+        });
+
+        this.hashes.put(HashType.BYTECODE, bytecodeDigester.getHash());
+
+        if (!bytecodeErrors.isEmpty())
+        {
+            if (bytecodeErrors.size() == 1)
+            {
+                throw bytecodeErrors.get(0);
+            }
+            else
+            {
+                IOException cause = new IOException("Unable to calculate Bytecode Hash");
+                for (IOException e : bytecodeErrors)
+                {
+                    cause.addSuppressed(e);
+                }
+                throw cause;
+            }
+        }
     }
 
     public long getFileSize()
@@ -193,7 +227,7 @@ public class JarAnalyzer implements AutoCloseable
         jarReference.addVendor(attributes.getValue(Osgi.BUNDLE_VENDOR));
         jarReference.setOsgiSymbolicName(attributes.getValue(Osgi.BUNDLE_SYMBOLIC_NAME));
 
-        // JMPS
+        // JPMS
         jarReference.addJpmsModuleName(attributes.getValue(Jpms.AUTOMATIC_MODULE_NAME));
     }
 

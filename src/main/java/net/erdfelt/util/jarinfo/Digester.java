@@ -67,15 +67,25 @@ public class Digester
             try (InputStream fileInput = Files.newInputStream(file);)
             {
                 messageDigest.reset();
-                byte[] buffer = new byte[BUFFER_SIZE];
-                int size;
-                while (((size = fileInput.read(buffer, 0, BUFFER_SIZE)) >= 0))
-                {
-                    messageDigest.update(buffer, 0, size);
-                }
-                return asHex(messageDigest.digest());
+                update(fileInput);
+                return getHash();
             }
         }
+    }
+
+    public void update(InputStream inputStream) throws IOException
+    {
+        byte[] buffer = new byte[BUFFER_SIZE];
+        int size;
+        while (((size = inputStream.read(buffer, 0, BUFFER_SIZE)) >= 0))
+        {
+            messageDigest.update(buffer, 0, size);
+        }
+    }
+
+    public String getHash()
+    {
+        return asHex(messageDigest.digest());
     }
 
     public String getHashID()
