@@ -15,17 +15,18 @@
  */
 package net.erdfelt.util.jarinfo;
 
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Locale;
 
 import net.erdfelt.util.jarinfo.analysis.JarAnalyzer;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
 
 /**
  * JarInfo
@@ -37,32 +38,77 @@ public class JarInfo
         DELIMITED, STANDARD
     }
 
-    @Option(name = "-o", aliases =
-        {"--output-format"}, usage = "Output format")
     private OutputFormat outputFmt = OutputFormat.STANDARD;
-
-    @Argument(required = true, index = 0, metaVar = "FILE", usage = "jar file")
-    private List<String> jarfilenames = new ArrayList<String>();
+    private List<String> jarfilenames = new ArrayList<>();
 
     public static void main(String[] args)
     {
         JarInfo info = new JarInfo();
-        CmdLineParser parser = new CmdLineParser(info);
         try
         {
-            parser.parseArgument(args);
+            info.parseCommandLine(args);
             info.execute();
         }
-        catch (CmdLineException e)
+        catch (IllegalArgumentException e)
         {
-            System.err.println(e.getMessage());
-            System.err.println("java -jar jarinfo.jar [options...] arguments...");
-            parser.printUsage(System.err);
+            info.showUsage(System.err, e);
         }
         catch (Throwable t)
         {
             t.printStackTrace(System.err);
         }
+    }
+
+    private void parseCommandLine(String[] args) throws IllegalArgumentException
+    {
+        LinkedList<String> cmdline = new LinkedList<>(Arrays.asList(args));
+        ListIterator<String> cmdIter = cmdline.listIterator();
+
+        while(cmdIter.hasNext())
+        {
+            String arg = cmdIter.next();
+
+            if(arg.equalsIgnoreCase("-o"))
+            {
+                if(cmdIter.hasNext())
+                {
+                    outputFmt = OutputFormat.valueOf(cmdIter.next().toUpperCase(Locale.ENGLISH));
+                }
+                else
+                {
+                    throw new IllegalArgumentException("Missing outputFormat");
+                }
+            }
+            else if(arg.startsWith("--output-format="))
+            {
+                String name = arg.substring("--output-format=".length());
+                outputFmt = OutputFormat.valueOf(name);
+            }
+            else if(arg.endsWith(".jar"))
+            {
+                jarfilenames.add(arg);
+            }
+            else
+            {
+                throw new IllegalArgumentException("Unrecognized command line argument");
+            }
+        }
+
+        if(jarfilenames.isEmpty())
+        {
+            throw new IllegalArgumentException("FILE argument is required");
+        }
+    }
+
+    private void showUsage(PrintStream out, Throwable cause)
+    {
+        if(cause != null)
+        {
+            cause.printStackTrace(out);
+        }
+        out.println("java -jar jarinfo.jar [options...] FILE...");
+        out.println("FILE                                         : jar file");
+        out.println(" -o (--output-format) [DELIMITED | STANDARD] : Output format");
     }
 
     private void execute() throws Exception
