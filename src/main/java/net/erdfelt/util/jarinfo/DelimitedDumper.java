@@ -55,8 +55,8 @@ public class DelimitedDumper implements Dumper
         jarReference.getCreatedBy().forEach((createdBy) -> OUT(analyzer, "CREATED_BY|" + createdBy));
 
         OUT(analyzer, "HASH_MD5|" + analyzer.getHash(JarAnalyzer.HashType.MD5));
-        OUT(analyzer, "HASH_SHA1|" + analyzer.getHash(JarAnalysis.HashType.SHA1));
-        OUT(analyzer, "HASH_BYTECODE|" + analyzer.getHash(JarAnalysis.HashType.BYTECODE));
+        OUT(analyzer, "HASH_SHA1|" + analyzer.getHash(JarAnalyzer.HashType.SHA1));
+        OUT(analyzer, "HASH_BYTECODE|" + analyzer.getHash(JarAnalyzer.HashType.BYTECODE));
 
         List<ClassReference> classReferences = analyzer.getClassReferences();
 

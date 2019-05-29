@@ -96,8 +96,10 @@ public class JarInfo
                 System.exit(1);
             }
 
-            JarAnalyzer jarAnalyzer = new JarAnalyzer(jarFile);
-            dumper.dump(jarAnalyzer);
+            try (JarAnalyzer jarAnalyzer = new JarAnalyzer(jarFile))
+            {
+                dumper.dump(jarAnalyzer);
+            }
         }
     }
 }

@@ -31,7 +31,9 @@ public class DelimitedDumperTest
     {
         Dumper dumper = new DelimitedDumper();
         Path mystery = MavenTestingUtils.getTestResourcePathFile("jars/mystery.jar");
-        JarAnalyzer jarAnalyzer = new JarAnalyzer(mystery);
-        dumper.dump(jarAnalyzer);
+        try (JarAnalyzer jarAnalyzer = new JarAnalyzer(mystery))
+        {
+            dumper.dump(jarAnalyzer);
+        }
     }
 }

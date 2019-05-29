@@ -36,7 +36,7 @@ public class StandardDumper implements Dumper
         {
             if (Files.isRegularFile(entry))
             {
-                if(entry.getFileName().endsWith(".class"))
+                if(entry.getFileName().toString().endsWith(".class"))
                 {
                     ClassReference classReference = analyzer.parseClass(entry);
                     System.out.println("  class: " + classReference.getClassName());
@@ -48,6 +48,10 @@ public class StandardDumper implements Dumper
                 {
                     System.out.println("  file: " + entry);
                 }
+            }
+            else if(Files.isDirectory(entry))
+            {
+                System.out.println("  dir : " + entry);
             }
         }
     }
