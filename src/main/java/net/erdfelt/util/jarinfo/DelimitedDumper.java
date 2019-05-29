@@ -67,6 +67,7 @@ public class DelimitedDumper implements Dumper
         for (ClassReference classRef : classReferences)
         {
             OUT(analyzer, "CLASS|" + classRef.getClassName());
+            OUT(analyzer, "CLASS_HASH|" + classRef.getHash());
         }
 
         for (ClassReference classRef : classReferences)

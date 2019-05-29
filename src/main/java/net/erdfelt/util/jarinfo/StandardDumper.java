@@ -41,6 +41,7 @@ public class StandardDumper implements Dumper
                     ClassReference classReference = analyzer.parseClass(entry);
                     System.out.println("  class: " + classReference.getClassName());
                     System.out.println("    version: " + classReference.getBytecodeVersion());
+                    System.out.println("    sha1: " + classReference.getHash());
                     System.out.println("    methods: ");
                     classReference.getMethodSignatures().forEach(sig -> System.out.println("     # " + sig));
                 }

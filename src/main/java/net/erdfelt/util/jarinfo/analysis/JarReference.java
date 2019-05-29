@@ -34,11 +34,11 @@ public class JarReference
     private Set<String> buildJdk = new TreeSet<>();
     private Set<String> createdBy = new TreeSet<>();
 
-    public void addBuiltBy(String value)
+    public void addArtifactId(String value)
     {
-        if(value == null)
+        if (value == null)
             return;
-        builtBy.add(value);
+        artifactId.add(value);
     }
 
     public void addBuildJdk(String value)
@@ -46,6 +46,13 @@ public class JarReference
         if(value == null)
             return;
         buildJdk.add(value);
+    }
+
+    public void addBuiltBy(String value)
+    {
+        if(value == null)
+            return;
+        builtBy.add(value);
     }
 
     public void addCreatedBy(String value)
@@ -62,11 +69,11 @@ public class JarReference
         groupId.add(value);
     }
 
-    public void addArtifactId(String value)
+    public void addJpmsModuleName(String value)
     {
         if (value == null)
             return;
-        artifactId.add(value);
+        jpmsModuleName.add(value);
     }
 
     public void addName(String value)
@@ -90,11 +97,44 @@ public class JarReference
         version.add(value);
     }
 
-    public void addJpmsModuleName(String value)
+    public Set<String> getArtifactId()
     {
-        if (value == null)
-            return;
-        jpmsModuleName.add(value);
+        return artifactId;
+    }
+
+    public Set<String> getBuildJdk()
+    {
+        return buildJdk;
+    }
+
+    public Set<String> getBuiltBy()
+    {
+        return builtBy;
+    }
+
+    public Set<String> getCreatedBy()
+    {
+        return createdBy;
+    }
+
+    public Set<String> getGroupId()
+    {
+        return groupId;
+    }
+
+    public Set<String> getJpmsModuleName()
+    {
+        return jpmsModuleName;
+    }
+
+    public Set<String> getName()
+    {
+        return name;
+    }
+
+    public String getOsgiSymbolicName()
+    {
+        return osgiSymbolicName;
     }
 
     public void setOsgiSymbolicName(String value)
@@ -104,53 +144,13 @@ public class JarReference
         osgiSymbolicName = value;
     }
 
-    public Set<String> getGroupId()
-    {
-        return groupId;
-    }
-
-    public Set<String> getArtifactId()
-    {
-        return artifactId;
-    }
-
-    public Set<String> getVersion()
-    {
-        return version;
-    }
-
-    public Set<String> getJpmsModuleName()
-    {
-        return jpmsModuleName;
-    }
-
-    public String getOsgiSymbolicName()
-    {
-        return osgiSymbolicName;
-    }
-
-    public Set<String> getName()
-    {
-        return name;
-    }
-
     public Set<String> getVendor()
     {
         return vendor;
     }
 
-    public Set<String> getBuiltBy()
+    public Set<String> getVersion()
     {
-        return builtBy;
-    }
-
-    public Set<String> getBuildJdk()
-    {
-        return buildJdk;
-    }
-
-    public Set<String> getCreatedBy()
-    {
-        return createdBy;
+        return version;
     }
 }

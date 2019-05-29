@@ -1,9 +1,11 @@
 package net.erdfelt.util.jarinfo.analysis;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.erdfelt.util.jarinfo.Digester;
 import org.objectweb.asm.tree.MethodNode;
 
 public class ClassReference
@@ -11,12 +13,21 @@ public class ClassReference
     private final Path path;
     private String className;
     private BytecodeVersion bytecodeVersion;
+    private String hash;
     private List<String> methodSignatures = new ArrayList<>();
     private List<Throwable> errors = new ArrayList<>();
 
     public ClassReference(Path path)
     {
         this.path = path;
+        try
+        {
+            this.hash = Digester.SHA1().calc(path);
+        }
+        catch (IOException e)
+        {
+            this.hash = "-";
+        }
     }
 
     public void addError(Throwable cause)
@@ -42,14 +53,14 @@ public class ClassReference
         this.methodSignatures.add(sig.toString());
     }
 
+    public BytecodeVersion getBytecodeVersion()
+    {
+        return bytecodeVersion;
+    }
+
     public void setBytecodeVersion(BytecodeVersion version)
     {
         this.bytecodeVersion = version;
-    }
-
-    public void setClassName(String name)
-    {
-        this.className = name.replaceAll("/", ".");
     }
 
     public String getClassName()
@@ -57,14 +68,9 @@ public class ClassReference
         return className;
     }
 
-    public BytecodeVersion getBytecodeVersion()
+    public void setClassName(String name)
     {
-        return bytecodeVersion;
-    }
-
-    public Path getPath()
-    {
-        return path;
+        this.className = name.replaceAll("/", ".");
     }
 
     public List<Throwable> getErrors()
@@ -72,8 +78,18 @@ public class ClassReference
         return errors;
     }
 
+    public String getHash()
+    {
+        return hash;
+    }
+
     public List<String> getMethodSignatures()
     {
         return methodSignatures;
+    }
+
+    public Path getPath()
+    {
+        return path;
     }
 }
